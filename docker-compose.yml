@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+  # The db used by the quarkus app
+  # This service doesn't need to expose any ports to the host
+  postgres:
+    image: postgres:15
+    env_file:
+      - dev.env
+    restart: unless-stopped
+    networks:
+      - app-net
+    volumes:
+      - db-vol:/var/lib/postgresql/data # This path contains the db data (see: https://hub.docker.com/_/postgres)
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1gb
+
+  # The quarkus crud app
+  app:
+    depends_on:
+      - postgres
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - dev.env
+    restart: unless-stopped
+    networks:
+      - app-net
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1gb
+
+networks:
+  app-net:
+
+volumes:
+  db-vol:
